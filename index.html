@@ -9,15 +9,27 @@
   <body>
     <div class="header">
       <h1>Calculate.me</h1>
-      <h2>Let's calculate together!</h2>
+      <h2>Calculations done right.</h2>
     </div>
     <div class="calculator">
-      <input class="displayOperation" type="text" />
-      <input class="displayResult" type="text" />
+      <div class="ouput_field">
+        <p class="calc_inscryption">Calculator</p>
+        <div class="displays">
+          <input
+            class="displayOperation"
+            type="text"
+            placeholder="Your input"
+            pattern="[0-9+-*/]"
+          />
+          <input class="displayResult" type="text" placeholder="Result" />
+        </div>
+      </div>
       <div class="controlPanel">
         <div class="non-operations">
-          <button class="clear_button">AC</button>
-          <button>Backspace</button>
+          <div class="clear">
+            <button class="clear_button">AC</button>
+            <button class="backspace">Backspace</button>
+          </div>
           <button class="number">1</button>
           <button class="number">2</button>
           <button class="number">3</button>
@@ -36,6 +48,7 @@
           <button class="operator">-</button>
           <button class="operator">/</button>
           <button class="operator">*</button>
+          <button class="operator">%</button>
         </div>
       </div>
     </div>
@@ -93,19 +106,75 @@
 
       // Whatever else that's required in my project block
 
+      //   [
+      //     backspace,
+      //     clear_button,
+      //     number_buttons,
+      //     equality_operator,
+      //     operator,
+      //   ].addEventListener("mousemove", function (event) {
+      //     while (event.buttons === 1) {
+      //       [
+      //         backspace,
+      //         clear_button,
+      //         number_buttons,
+      //         equality_operator,
+      //         operator,
+      //       ].style.backgroundColor = white;
+      //       [
+      //         backspace,
+      //         clear_button,
+      //         number_buttons,
+      //         equality_operator,
+      //         operator,
+      //       ].style.color = black;
+      //     }
+      //   });
+
+      let backspace = document.querySelector(".backspace");
+      backspace.addEventListener("click", function () {
+        displayOperation.value = displayOperation.value.slice(0, -1);
+      });
+
       let clear_button = document.querySelector(".clear_button");
       clear_button.addEventListener("click", function () {
         displayOperation.value = "";
+        displayResult.value = "";
       });
       let displayOperation = document.querySelector(".displayOperation");
+      displayOperation.addEventListener("keypress", (event) => {
+        const allowedKeys = /[0-9+\-*\/\r\n]/;
+        const key = event.key;
+
+        if (!allowedKeys.test(key)) {
+          event.preventDefault();
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (/[0-9]/.test(event.key) || /[+\-*\/]/.test(event.key)) {
+          displayOperation.value += event.key;
+        }
+        if (event.key == "Backspace") {
+          displayOperation.value = displayOperation.value.slice(0, -1);
+        }
+        if (event.key === "Enter") {
+          document.querySelector(".equality_operator").click();
+        }
+      });
+      let displayResult = document.querySelector(".displayResult");
+      displayResult.addEventListener("keypress", (e) => {
+        e.preventDefault();
+      });
       let number_buttons = document.querySelectorAll(".number");
       for (let i = 0; i < 10; i++) {
+        // 10 represents 10 numbers 0-9
         number_buttons[i].addEventListener("click", function () {
           displayOperation.value += this.textContent;
         });
       }
       let operator = document.querySelectorAll(".operator");
       for (let i = 0; i < 4; i++) {
+        // 4 as in 4 operators (/*-+)
         operator[i].addEventListener("click", function () {
           displayOperation.value += this.textContent;
         });
@@ -115,6 +184,10 @@
         for (let i = countDivisionAndMultiply(arr); i > 0; i--) {
           if (arr.includes(`/`)) {
             let indexOfOperation = arr.indexOf("/");
+            if (arr[indexOfOperation + 1] == 0) {
+              arr.splice(0, arr.length, "Err");
+              break;
+            }
             let portionOfExpression = arr.splice(indexOfOperation - 1, 3);
             console.log(portionOfExpression);
             let resultOfPortion = operate(portionOfExpression);
@@ -129,6 +202,7 @@
             console.log(arr);
           }
         }
+        return arr[0];
       };
 
       let operateMultipleLowPriorityOperators = function (arr) {
@@ -146,9 +220,10 @@
             console.log(portionOfExpression);
             let resultOfPortion = operate(portionOfExpression);
             arr.splice(indexOfOperation - 1, 0, resultOfPortion);
-            console.log(arr);
+            console.log(arr[0]);
           }
         }
+        return arr[0];
       };
 
       let equality_operator = document.querySelector(".equality_operator");
@@ -160,15 +235,16 @@
           highPriorityOperators.some((item) => user_input.includes(item))
         ) {
           operateMultipleHighPriorityOperators(user_input);
-          operateMultipleLowPriorityOperators(user_input);
+          displayResult.value = operateMultipleLowPriorityOperators(user_input);
         } else if (
           !highPriorityOperators.some((item) => user_input.includes(item))
         ) {
-          operateMultipleLowPriorityOperators(user_input);
+          displayResult.value = operateMultipleLowPriorityOperators(user_input);
         } else if (
           !lowPriorityOperators.some((item) => user_input.includes(item))
         ) {
-          operateMultipleHighPriorityOperators(user_input);
+          displayResult.value =
+            operateMultipleHighPriorityOperators(user_input);
         }
       });
     </script>
